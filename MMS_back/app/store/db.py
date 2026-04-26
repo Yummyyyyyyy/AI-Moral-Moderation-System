@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS classifications (
     harm_type       TEXT,
     score           REAL NOT NULL,
     strategy_hint   TEXT,
+    model_details   TEXT,
     model_version   TEXT NOT NULL,
     created_at      TEXT NOT NULL,
     FOREIGN KEY (post_id) REFERENCES posts(id)
@@ -90,6 +91,15 @@ def init_db() -> None:
     Path(settings.db_path).parent.mkdir(parents=True, exist_ok=True)
     with connect() as conn:
         conn.executescript(_SCHEMA)
+        _ensure_column(conn, "classifications", "model_details", "TEXT")
+
+
+def _ensure_column(conn: sqlite3.Connection, table: str, column: str, column_type: str) -> None:
+    """Add a missing column to an existing SQLite table."""
+    rows = conn.execute(f"PRAGMA table_info({table})").fetchall()
+    existing = {row["name"] for row in rows}
+    if column not in existing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
 
 
 @contextmanager

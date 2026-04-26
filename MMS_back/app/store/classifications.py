@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 
 from app.schemas.classification import BinaryLabel, HarmType, TypeLabel
@@ -15,8 +16,8 @@ def record_binary(post_id: str, label: BinaryLabel) -> None:
             """
             INSERT INTO classifications
               (post_id, stage, is_harmful, harm_type, score, strategy_hint,
-               model_version, created_at)
-            VALUES (?, 'binary', ?, NULL, ?, NULL, ?, ?)
+               model_details, model_version, created_at)
+            VALUES (?, 'binary', ?, NULL, ?, NULL, NULL, ?, ?)
             """,
             (
                 post_id,
@@ -35,14 +36,15 @@ def record_typed(post_id: str, label: TypeLabel) -> None:
             """
             INSERT INTO classifications
               (post_id, stage, is_harmful, harm_type, score, strategy_hint,
-               model_version, created_at)
-            VALUES (?, 'typed', NULL, ?, ?, ?, ?, ?)
+               model_details, model_version, created_at)
+            VALUES (?, 'typed', NULL, ?, ?, ?, ?, ?, ?)
             """,
             (
                 post_id,
                 label.harm_type.value,
                 label.score,
                 label.strategy_hint,
+                json.dumps(label.model_details, ensure_ascii=False) if label.model_details else None,
                 label.model_version,
                 datetime.utcnow().isoformat(),
             ),
@@ -56,7 +58,13 @@ def history_for(post_id: str) -> list[dict]:
             "SELECT * FROM classifications WHERE post_id = ? ORDER BY id ASC",
             (post_id,),
         ).fetchall()
-    return [dict(r) for r in rows]
+    items = []
+    for row in rows:
+        item = dict(row)
+        raw_details = item.get("model_details")
+        item["model_details"] = json.loads(raw_details) if raw_details else None
+        items.append(item)
+    return items
 
 
 def latest_typed(post_id: str) -> TypeLabel | None:
@@ -76,5 +84,6 @@ def latest_typed(post_id: str) -> TypeLabel | None:
         harm_type=HarmType(row["harm_type"]),
         score=row["score"],
         strategy_hint=row["strategy_hint"],
+        model_details=json.loads(row["model_details"]) if row["model_details"] else None,
         model_version=row["model_version"],
     )

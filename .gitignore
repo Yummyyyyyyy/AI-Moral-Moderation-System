@@ -4,13 +4,25 @@ __pycache__/
 .venv/
 env/
 venv/
+*.db
 *.sqlite3
+.pytest_cache/
+pytest-cache-files-*/
 .DS_Store
 
 # Node
 node_modules/
 dist/
 .vite/
+*.tsbuildinfo
+
+# TypeScript build output emitted next to source
+MMS_front/src/**/*.js
+
+# Local model weights
+MMS_back/models/**/*.pt
+MMS_back/models/**/*.bin
+MMS_back/models/**/*.safetensors
 
 # logs / temp
 *.log

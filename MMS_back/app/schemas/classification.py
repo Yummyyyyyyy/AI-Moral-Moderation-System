@@ -41,4 +41,5 @@ class TypeLabel(BaseModel):
     harm_type: HarmType
     score: float = Field(ge=0.0, le=1.0)
     strategy_hint: str | None = None
+    model_details: dict | None = None
     model_version: str = "dummy-v0"

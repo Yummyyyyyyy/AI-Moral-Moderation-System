@@ -248,6 +248,10 @@ a:hover { text-decoration: underline; }
 .chip.self_harm      { background: #ffd3d3;            color: #8d1a1a; border-color: #f0a5a5; }
 .chip.other          { background: var(--surface-2);   color: var(--text-dim); border-color: var(--border); }
 .chip.stage          { background: transparent; color: var(--text-dim); border-color: var(--border); }
+.chip.model-chip.inactive { background: var(--surface-2); color: var(--text-dim); border-color: var(--border); }
+.chip.model-chip.active   { background: #ffe4e4; color: #a32323; border-color: #f3baba; }
+.chip.model-chip.selected { background: #fff0d9; color: #8a530d; border-color: #edca8f; }
+.chip.model-chip.severity { background: #e7f0ff; color: #1f55a8; border-color: #bdd0f5; }
 
 /* ---------- Nested bot reply ---------- */
 .thread {
