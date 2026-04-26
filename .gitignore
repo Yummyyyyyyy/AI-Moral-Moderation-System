@@ -4,14 +4,20 @@ __pycache__/
 .venv/
 env/
 venv/
+*.db
 *.sqlite3
-MMS_back/data/*.db
+.pytest_cache/
+pytest-cache-files-*/
 .DS_Store
 
 # Node
 node_modules/
 dist/
 .vite/
+*.tsbuildinfo
+
+# TypeScript build output emitted next to source
+MMS_front/src/**/*.js
 
 # logs / temp
 *.log
@@ -20,3 +26,5 @@ dist/
 # Model artifacts (large binary files, not for version control)
 MMS_back/app/classifier/model_assets/*
 !MMS_back/app/classifier/model_assets/.gitkeep
+MMS_back/models/*
+!MMS_back/models/.gitkeep
