@@ -24,7 +24,8 @@ class Settings:
     db_path: str
     llm_provider: str              # "dummy" | "claude" | "local"
     llm_model: str
-    anthropic_api_key: str | None
+    #anthropic_api_key: str | None
+    openai_api_key: str | None
     local_llm_base_url: str        # e.g. http://localhost:11434/v1
     classifier_binary_impl: str    # "dummy" | "team"
     classifier_typed_impl: str     # "dummy" | "team"
@@ -38,7 +39,8 @@ def load_settings() -> Settings:
         db_path=os.getenv("MMS_DB_PATH", str(DATA_DIR / "mms.db")),
         llm_provider=os.getenv("MMS_LLM_PROVIDER", "dummy"),
         llm_model=os.getenv("MMS_LLM_MODEL", "claude-sonnet-4-6"),
-        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+        #anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
+        openai_api_key=os.getenv("OPENAI_API_KEY"),
         local_llm_base_url=os.getenv("MMS_LOCAL_LLM_URL", "http://localhost:11434/v1"),
         classifier_binary_impl=os.getenv("MMS_C1_IMPL", "dummy"),
         classifier_typed_impl=os.getenv("MMS_C2_IMPL", "dummy"),
