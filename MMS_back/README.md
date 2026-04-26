@@ -46,6 +46,20 @@ uv run uvicorn app.main:app --reload
 uv run python scripts/seed_mock.py data/mock_posts.jsonl
 ```
 
+> **CUDA note (Windows):** `pyproject.toml` pins torch to the `cu124` wheel index
+> (pytorch.org), which works for CUDA 12.4 and 12.5.
+> If your driver reports a different CUDA version (`nvidia-smi` → top-right corner),
+> change the index name and URL in `[tool.uv.sources]` / `[[tool.uv.index]]`:
+>
+> | CUDA version | index name | URL suffix |
+> |---|---|---|
+> | 12.4 / 12.5 | `pytorch-cu124` | `/whl/cu124` |
+> | 12.1 | `pytorch-cu121` | `/whl/cu121` |
+> | 11.8 | `pytorch-cu118` | `/whl/cu118` |
+> | CPU only | `pytorch-cpu` | `/whl/cpu` |
+>
+> After changing, re-run `uv sync`.
+
 Then hit `GET http://localhost:8000/posts`, `GET /mod/queue`, etc.
 
 ## Team contract
