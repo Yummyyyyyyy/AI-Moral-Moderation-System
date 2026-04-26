@@ -12,9 +12,9 @@ def get_llm_client() -> LLMClient:
     Imports are local so unused providers don't force their deps to load.
     """
     provider = settings.llm_provider
-    if provider == "claude":
-        from app.llm.claude import ClaudeClient
-        return ClaudeClient()
+    if provider == "openai":
+        from app.llm.openai import OpenAIClient
+        return OpenAIClient()
     if provider == "local":
         from app.llm.local import LocalLLMClient
         return LocalLLMClient()
