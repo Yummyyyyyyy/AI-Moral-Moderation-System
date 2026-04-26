@@ -52,6 +52,21 @@ export interface LabelRow {
   harm_type: HarmType | null;
   score: number;
   strategy_hint: string | null;
+  model_details?: {
+    harmful?: Record<string, {
+      probability: number;
+      prediction: number;
+      threshold: number;
+    }>;
+    moral?: {
+      label: string;
+      probabilities: Record<string, number>;
+    };
+    severity?: {
+      label: string;
+      probabilities: Record<string, number>;
+    };
+  } | null;
   model_version: string;
   created_at: string;
 }

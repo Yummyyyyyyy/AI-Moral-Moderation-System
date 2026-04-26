@@ -41,7 +41,7 @@ def load_settings() -> Settings:
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         local_llm_base_url=os.getenv("MMS_LOCAL_LLM_URL", "http://localhost:11434/v1"),
         classifier_binary_impl=os.getenv("MMS_C1_IMPL", "dummy"),
-        classifier_typed_impl=os.getenv("MMS_C2_IMPL", "dummy"),
+        classifier_typed_impl=os.getenv("MMS_C2_IMPL", "team"),
         rag_impl=os.getenv("MMS_RAG_IMPL", "dummy"),
         auto_publish_on_empty_queue=os.getenv("MMS_AUTO_PUBLISH", "0") == "1",
     )
