@@ -5,6 +5,7 @@ __pycache__/
 env/
 venv/
 *.sqlite3
+MMS_back/data/*.db
 .DS_Store
 
 # Node
@@ -15,3 +16,7 @@ dist/
 # logs / temp
 *.log
 .tmp
+
+# Model artifacts (large binary files, not for version control)
+MMS_back/app/classifier/model_assets/*
+!MMS_back/app/classifier/model_assets/.gitkeep
