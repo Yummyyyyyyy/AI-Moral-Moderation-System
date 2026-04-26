@@ -18,5 +18,8 @@ def get_llm_client() -> LLMClient:
     if provider == "local":
         from app.llm.local import LocalLLMClient
         return LocalLLMClient()
+    if settings.llm_provider == "openai":  # 加这两行
+        from app.llm.openai import OpenAIClient
+        return OpenAIClient()
     from app.llm.dummy import DummyLLMClient
     return DummyLLMClient()
