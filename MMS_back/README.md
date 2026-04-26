@@ -28,13 +28,13 @@ tests/
 | Var | Default | Meaning |
 |---|---|---|
 | `MMS_DB_PATH` | `data/mms.db` | SQLite file |
-| `MMS_LLM_PROVIDER` | `dummy` | `dummy` / `claude` / `local` |
-| `MMS_LLM_MODEL` | `claude-sonnet-4-6` | model id passed to the chosen provider |
-| `ANTHROPIC_API_KEY` | *(unset)* | required when provider=claude |
+| `MMS_LLM_PROVIDER` | `dummy` | `dummy` / `openai` / `local` |
+| `MMS_LLM_MODEL` | `gpt-4o-mini` | model id passed to the chosen provider |
+| `OPENAI_API_KEY` | *(unset)* | required when provider=openai. Put it in `.env` (see `.env.example`); `.env` is gitignored. |
 | `MMS_LOCAL_LLM_URL` | `http://localhost:11434/v1` | OpenAI-compatible base URL for local model (Ollama / vLLM / TGI) |
 | `MMS_C1_IMPL` | `dummy` | `dummy` / `team` |
 | `MMS_C2_IMPL` | `dummy` | `dummy` / `team` |
-| `MMS_RAG_IMPL` | `dummy` | `dummy` / `team` |
+| `MMS_RAG_IMPL` | `dummy` | `dummy` / `team` (currently only handles `HATE` posts; other harm types degrade to empty) |
 
 ## Run
 

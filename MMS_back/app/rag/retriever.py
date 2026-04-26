@@ -1,10 +1,12 @@
 """Team Member C's RAG retriever hook-in point."""
-# app/rag/retriever.py
+
 from __future__ import annotations
+
 import pickle
-from pathlib import Path
+
 import faiss
 from sentence_transformers import SentenceTransformer
+
 from app.config import DATA_DIR
 from app.schemas.classification import HarmType
 from app.schemas.rag import RetrievedDoc
@@ -22,6 +24,13 @@ HATE_SPEECH_FRAMEWORK = (
 )
 
 class TeamRetriever:
+    """FAISS-backed retriever. Currently only HATE harm type is supported.
+
+    Other harm types fall back to an empty list so the responder degrades to
+    the base prompt instead of receiving hate-speech framework text by
+    mistake. Adding per-type case/framework data is a follow-up for Member C.
+    """
+
     version = "team-rag-v1"
 
     def __init__(self) -> None:
@@ -36,6 +45,8 @@ class TeamRetriever:
 
     def retrieve(self, query: str, harm_type: HarmType, top_k: int = 4) -> list[RetrievedDoc]:
         """High-similarity: return case docs. Low-similarity: return Wikipedia docs."""
+        if harm_type != HarmType.HATE:
+            return []
         emb = self._model.encode([query], normalize_embeddings=True).astype("float32")
         scores, indices = self._index.search(emb, 50)
 

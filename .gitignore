@@ -10,6 +10,9 @@ venv/
 pytest-cache-files-*/
 .DS_Store
 
+# Secrets — never commit
+.env
+
 # Node
 node_modules/
 dist/
@@ -28,3 +31,5 @@ MMS_back/app/classifier/model_assets/*
 !MMS_back/app/classifier/model_assets/.gitkeep
 MMS_back/models/*
 !MMS_back/models/.gitkeep
+MMS_back/data/index/*
+!MMS_back/data/index/.gitkeep
