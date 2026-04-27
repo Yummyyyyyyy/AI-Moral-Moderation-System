@@ -19,6 +19,7 @@ Returns a PipelineOutcome so the API can tell the frontend what happened.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from uuid import uuid4
 
@@ -36,6 +37,8 @@ from app.store import posts as posts_store
 from app.store import replies as replies_store
 from app.store import sessions as sessions_store
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PipelineOutcome:
@@ -50,10 +53,23 @@ class PipelineOutcome:
 
 
 def process_post(post: Post) -> PipelineOutcome:
-    """Run the full pipeline for a single post and return its outcome."""
+    """Run the full pipeline for a single post and return its outcome.
+
+    Each stage is wrapped so a single module crash degrades gracefully instead
+    of failing the whole ingest: classifier failures fail-safe to "not harmful",
+    rag failures fall back to empty docs, responder failures abort with a note,
+    and polisher failures fall back to the raw draft.
+    """
     posts_store.upsert(post)
 
-    binary = get_binary_classifier().classify(post)
+    try:
+        binary = get_binary_classifier().classify(post)
+    except Exception:
+        logger.exception("binary classifier failed for post %s", post.id)
+        binary = BinaryLabel(is_harmful=False, score=0.0, model_version="error-fallback")
+        outcome = PipelineOutcome(post_id=post.id, binary_label=binary)
+        outcome.notes.append("binary-classifier-error")
+        return outcome
     classifications_store.record_binary(post.id, binary)
 
     outcome = PipelineOutcome(post_id=post.id, binary_label=binary)
@@ -61,7 +77,12 @@ def process_post(post: Post) -> PipelineOutcome:
         outcome.notes.append("post-not-harmful")
         return outcome
 
-    typed = get_typed_classifier().categorize(post)
+    try:
+        typed = get_typed_classifier().categorize(post)
+    except Exception:
+        logger.exception("typed classifier failed for post %s", post.id)
+        outcome.notes.append("typed-classifier-error")
+        return outcome
     classifications_store.record_typed(post.id, typed)
     outcome.type_label = typed
 
@@ -72,9 +93,13 @@ def process_post(post: Post) -> PipelineOutcome:
 
     docs = []
     if spec.use_rag:
-        docs = get_retriever().retrieve(
-            query=post.text, harm_type=typed.harm_type, top_k=4
-        )
+        try:
+            docs = get_retriever().retrieve(
+                query=post.text, harm_type=typed.harm_type, top_k=4
+            )
+        except Exception:
+            logger.exception("retriever failed for post %s", post.id)
+            outcome.notes.append("retriever-error")
 
     ctx = ResponderContext(
         post=post,
@@ -83,15 +108,34 @@ def process_post(post: Post) -> PipelineOutcome:
         retrieved_docs=docs,
         history=[],
     )
-    result = spec.responder.respond(ctx)
-    polished = get_polisher().polish(result.text)
+    try:
+        result = spec.responder.respond(ctx)
+    except Exception:
+        logger.exception("responder failed for post %s", post.id)
+        outcome.notes.append("responder-error")
+        return outcome
+
+    # Counsel paths must preserve crisis-hotline content verbatim; the polisher
+    # has been observed to drop important phone numbers/URLs on self-harm replies.
+    if spec.opens_session:
+        polished = result.text
+        text_raw = None
+    else:
+        try:
+            polished = get_polisher().polish(result.text)
+            text_raw = result.text
+        except Exception:
+            logger.exception("polisher failed for post %s", post.id)
+            polished = result.text
+            text_raw = None
+            outcome.notes.append("polisher-error")
 
     status = ReplyStatus.PENDING_MOD if spec.require_moderation else ReplyStatus.AUTO_APPROVED
     draft = ReplyDraft(
         id=str(uuid4()),
         post_id=post.id,
         text=polished,
-        text_raw=result.text,
+        text_raw=text_raw,
         status=status,
         rag_doc_ids=[d.doc_id for d in docs],
         prompt_key=result.prompt_key,

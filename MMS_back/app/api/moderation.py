@@ -10,7 +10,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.llm.polish import get_polish_client
+from app.polisher import get_polisher
 from app.schemas.reply import ModeratorAction, ModeratorDecision, ReplyDraft, ReplyStatus
 from app.store import audit as audit_store
 from app.store import classifications as classifications_store
@@ -62,8 +62,7 @@ def decide(reply_id: str, req: DecideRequest) -> DecideResponse:
     after = req.edited_text
 
     if req.action == ModeratorAction.POLISH:
-        polished = get_polish_client().polish(draft.text)
-        after = polished
+        after = get_polisher().polish(draft.text)
 
     status = {
         ModeratorAction.APPROVE: ReplyStatus.PUBLISHED,
