@@ -35,6 +35,9 @@ tests/
 | `MMS_C1_IMPL` | `dummy` | `dummy` / `team` |
 | `MMS_C2_IMPL` | `dummy` | `dummy` / `team` |
 | `MMS_RAG_IMPL` | `dummy` | `dummy` / `team` (currently only handles `HATE` posts; other harm types degrade to empty) |
+| `MMS_POLISHER_IMPL` | `dummy` | `dummy` / `team`. `team` calls Member D's Colab+ngrok service to refine every reply draft. Failures fall back to the unpolished draft. |
+| `MMS_POLISHER_URL` | *(empty)* | Pin the polisher endpoint explicitly. Leave empty to auto-resolve from the shared Google Drive file Siwei publishes on each Colab boot. |
+| `MMS_POLISHER_TIMEOUT` | `15` | Seconds. Applies to both URL fetch and the inference call. |
 
 ## Run
 

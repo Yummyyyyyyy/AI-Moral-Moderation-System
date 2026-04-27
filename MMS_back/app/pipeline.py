@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from uuid import uuid4
 
 from app.classifier import get_binary_classifier, get_typed_classifier
+from app.polisher import get_polisher
 from app.rag import get_retriever
 from app.responder import REGISTRY, spec_for
 from app.responder.base import ResponderContext
@@ -83,12 +84,14 @@ def process_post(post: Post) -> PipelineOutcome:
         history=[],
     )
     result = spec.responder.respond(ctx)
+    polished = get_polisher().polish(result.text)
 
     status = ReplyStatus.PENDING_MOD if spec.require_moderation else ReplyStatus.AUTO_APPROVED
     draft = ReplyDraft(
         id=str(uuid4()),
         post_id=post.id,
-        text=result.text,
+        text=polished,
+        text_raw=result.text,
         status=status,
         rag_doc_ids=[d.doc_id for d in docs],
         prompt_key=result.prompt_key,
@@ -100,7 +103,7 @@ def process_post(post: Post) -> PipelineOutcome:
     if spec.opens_session:
         sess = sessions_store.create(post_id=post.id, user_id=post.author.user_id)
         # Seed the session with the bot's first message so chat UI shows it.
-        sessions_store.append_turn(sess.id, role=_bot_role(), text=result.text)
+        sessions_store.append_turn(sess.id, role=_bot_role(), text=polished)
         outcome.session = sess
 
     return outcome
