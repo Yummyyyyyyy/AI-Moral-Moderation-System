@@ -25,13 +25,14 @@ architecture:
     - no hardcoded prompts inside business logic; prompts live in app/prompts/*.yaml and are loaded by key
     - llm access always goes through llm.base.LLMClient; never instantiate vendor SDKs in business logic
     - responder dispatch is a registry keyed by HarmType; there is no separate router module
+    - polisher is a post-responder rewrite stage (app/polisher), not an LLM provider; it is bypassed on counsel paths to preserve crisis-hotline content
 
 modules:
   owners:
     classifier_binary: member-A
     classifier_typed:  member-B
     rag:               member-C
-    llm_rlhf:          member-D
+    polisher:          member-D
     integration:       owner
   contract: each module implements the Protocol in its base.py; dummy.py provides a working stub so the pipeline runs end-to-end before real models land
 
