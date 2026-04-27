@@ -15,14 +15,15 @@ def insert(draft: ReplyDraft) -> None:
         conn.execute(
             """
             INSERT INTO replies
-              (id, post_id, text, status, rag_doc_ids, prompt_key,
+              (id, post_id, text, text_raw, status, rag_doc_ids, prompt_key,
                llm_model, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 draft.id,
                 draft.post_id,
                 draft.text,
+                draft.text_raw,
                 draft.status.value,
                 json.dumps(draft.rag_doc_ids),
                 draft.prompt_key,
@@ -99,6 +100,7 @@ def _from_row(row) -> ReplyDraft:
         id=row["id"],
         post_id=row["post_id"],
         text=row["text"],
+        text_raw=row["text_raw"] if "text_raw" in row.keys() else None,
         status=ReplyStatus(row["status"]),
         rag_doc_ids=json.loads(row["rag_doc_ids"]),
         prompt_key=row["prompt_key"],

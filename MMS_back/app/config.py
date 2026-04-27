@@ -32,6 +32,9 @@ class Settings:
     classifier_binary_impl: str    # "dummy" | "team"
     classifier_typed_impl: str     # "dummy" | "team"
     rag_impl: str                  # "dummy" | "team"
+    polisher_impl: str             # "dummy" | "team"
+    polisher_url: str              # explicit override; empty means fetch from Drive
+    polisher_timeout: float        # seconds for both URL fetch and inference call
     auto_publish_on_empty_queue: bool
 
 
@@ -46,6 +49,9 @@ def load_settings() -> Settings:
         classifier_binary_impl=os.getenv("MMS_C1_IMPL", "dummy"),
         classifier_typed_impl=os.getenv("MMS_C2_IMPL", "dummy"),
         rag_impl=os.getenv("MMS_RAG_IMPL", "dummy"),
+        polisher_impl=os.getenv("MMS_POLISHER_IMPL", "dummy"),
+        polisher_url=os.getenv("MMS_POLISHER_URL", ""),
+        polisher_timeout=float(os.getenv("MMS_POLISHER_TIMEOUT", "15")),
         auto_publish_on_empty_queue=os.getenv("MMS_AUTO_PUBLISH", "0") == "1",
     )
 

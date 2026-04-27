@@ -24,6 +24,7 @@ class ReplyDraft(BaseModel):
     id: str
     post_id: str
     text: str
+    text_raw: str | None = None  # responder draft before polisher; None == not polished
     status: ReplyStatus
     rag_doc_ids: list[str] = Field(default_factory=list)
     prompt_key: str

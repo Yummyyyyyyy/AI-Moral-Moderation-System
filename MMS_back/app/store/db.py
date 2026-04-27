@@ -92,6 +92,7 @@ def init_db() -> None:
     with connect() as conn:
         conn.executescript(_SCHEMA)
         _ensure_column(conn, "classifications", "model_details", "TEXT")
+        _ensure_column(conn, "replies", "text_raw", "TEXT")
 
 
 def _ensure_column(conn: sqlite3.Connection, table: str, column: str, column_type: str) -> None:
