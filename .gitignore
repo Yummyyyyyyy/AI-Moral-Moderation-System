@@ -26,10 +26,12 @@ MMS_front/src/**/*.js
 *.log
 .tmp
 
-# Model artifacts (large binary files, not for version control)
-MMS_back/app/classifier/model_assets/*
-!MMS_back/app/classifier/model_assets/.gitkeep
-MMS_back/models/*
+# Model artifacts (large binary files, not for version control).
+# All ML weights / FAISS indexes live under MMS_back/models/<name>/.
+# We keep empty per-module dirs in version control via .gitkeep so a fresh
+# clone has the layout; the artifacts themselves are downloaded out of band.
+MMS_back/models/**
+!MMS_back/models/
+!MMS_back/models/*/
 !MMS_back/models/.gitkeep
-MMS_back/data/index/*
-!MMS_back/data/index/.gitkeep
+!MMS_back/models/*/.gitkeep

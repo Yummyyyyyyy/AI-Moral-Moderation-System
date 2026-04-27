@@ -7,15 +7,17 @@ import pickle
 import faiss
 from sentence_transformers import SentenceTransformer
 
-from app.config import DATA_DIR
+from app.config import model_dir
 from app.schemas.classification import HarmType
 from app.schemas.rag import RetrievedDoc
 
 SIMILARITY_THRESHOLD = 0.55
-INDEX_PATH = DATA_DIR / "index/faiss.index"
-META_PATH = DATA_DIR / "index/meta.pkl"
-KN_INDEX_PATH = DATA_DIR / "index/knowledge.faiss"
-KN_META_PATH = DATA_DIR / "index/knowledge_meta.pkl"
+# Resolves to MMS_back/models/rag_index/, override via MMS_RAG_INDEX_DIR.
+_INDEX_DIR = model_dir("rag_index")
+INDEX_PATH = _INDEX_DIR / "faiss.index"
+META_PATH = _INDEX_DIR / "meta.pkl"
+KN_INDEX_PATH = _INDEX_DIR / "knowledge.faiss"
+KN_META_PATH = _INDEX_DIR / "knowledge_meta.pkl"
 
 HATE_SPEECH_FRAMEWORK = (
     "Research shows exclusionary language causes psychological harm including "

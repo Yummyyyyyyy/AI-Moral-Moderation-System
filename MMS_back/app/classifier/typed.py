@@ -7,13 +7,11 @@ import os
 from pathlib import Path
 from typing import Any
 
+from app.config import model_dir
 from app.schemas.classification import HarmType, TypeLabel
 from app.schemas.post import Post
 
 
-# app/classifier/typed.py -> app -> MMS_back/models
-DEFAULT_MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "multitask_roberta_base_v1"
-MODEL_DIR_ENV = "MMS_TYPED_MODEL_DIR"
 DEVICE_ENV = "MMS_TYPED_DEVICE"
 
 FALLBACK_HARMFUL_COLS = ["toxic", "obscene", "threat", "insult", "identity_hate"]
@@ -151,13 +149,13 @@ class TeamTypedClassifier:
                 "cuda" if self.torch.cuda.is_available() else "cpu",
             )
         )
-        self.model_dir = Path(os.getenv(MODEL_DIR_ENV, str(DEFAULT_MODEL_DIR))).resolve()
+        self.model_dir = model_dir("classifier_typed").resolve()
         checkpoint_path = self.model_dir / "best_model.pt"
         if not checkpoint_path.exists():
             raise FileNotFoundError(
                 f"Cannot find typed classifier checkpoint: {checkpoint_path}. "
-                f"Default path is resolved relative to the project workspace. "
-                f"Set {MODEL_DIR_ENV} only if the model directory is elsewhere."
+                f"Default path is models/classifier_typed/ at the repo root. "
+                f"Set MMS_CLASSIFIER_TYPED_DIR only if the model directory is elsewhere."
             )
 
         checkpoint = self._load_checkpoint(checkpoint_path)
