@@ -7,10 +7,10 @@ description: How to contribute to this MMS project — module ownership, run com
 
 Two services in this repo:
 
-- [MMS_back/](MMS_back/) — Python 3.11 + FastAPI + SQLite. Pipeline orchestrator.
+- [MMS_back/](MMS_back/) — Python `>=3.11` (verified on 3.13) + FastAPI + SQLite. Pipeline orchestrator.
 - [MMS_front/](MMS_front/) — Vite + React + TS. Feed / Chat / Mod / Ingest pages.
 
-The pipeline (`ingest → binary classify → typed classify → rag → responder → moderation`) already works end-to-end with stubs. Your job is to replace ONE stub with your real model — without touching anyone else's files.
+The pipeline (`ingest → binary classify → typed classify → rag → responder → polisher → moderation`) already works end-to-end with dummy stubs. Your job is to replace ONE stub with your real model — without touching anyone else's files. For full setup / smoke-test / troubleshooting see [RUNNING.md](RUNNING.md) or the `run-locally` skill.
 
 ## Run locally
 
@@ -34,7 +34,9 @@ Each member owns ONE file. Replace the stub body. Keep the class name and method
 | A | [MMS_back/app/classifier/binary.py](MMS_back/app/classifier/binary.py) | `TeamBinaryClassifier.classify(post) -> BinaryLabel` |
 | B | [MMS_back/app/classifier/typed.py](MMS_back/app/classifier/typed.py) | `TeamTypedClassifier.categorize(post) -> TypeLabel` |
 | C | [MMS_back/app/rag/retriever.py](MMS_back/app/rag/retriever.py) | `TeamRetriever.retrieve(query, harm_type, top_k) -> list[RetrievedDoc]` |
-| D | *(no file edit)* | Expose your RLHF model at an OpenAI-compatible endpoint |
+| D | [MMS_back/app/polisher/team.py](MMS_back/app/polisher/team.py) | `TeamPolisher.polish(text) -> str` (post-responder rewrite) |
+
+ML weights / FAISS indexes for A / B / C live under [MMS_back/models/<name>/](MMS_back/models/) (gitignored, distributed out of band). Resolve with `app.config.model_dir(name)`.
 
 Don't import other teams' files. The pipeline picks up your code via the factory once the env var below is set.
 
@@ -46,15 +48,18 @@ Default is `dummy` so the pipeline keeps running while you develop. Flip your ow
 export MMS_C1_IMPL=team           # Member A
 export MMS_C2_IMPL=team           # Member B
 export MMS_RAG_IMPL=team          # Member C
-export MMS_LLM_PROVIDER=local     # Member D
-export MMS_LOCAL_LLM_URL=http://<your-host>:<port>/v1
+export MMS_POLISHER_IMPL=team     # Member D (set MMS_POLISHER_URL too if you want to pin it)
 ```
+
+Each `team` impl has independent fallback: if loading or calling fails, the pipeline records an error note and continues — see the per-stage try/except in `app/pipeline.py`. The counsel path (depressive / self-harm) **skips** the polisher to preserve crisis-hotline content; do not remove that guard.
 
 ## Before you open a PR
 
 ```bash
-cd MMS_back && uv run pytest
+cd MMS_back && OMP_NUM_THREADS=1 KMP_DUPLICATE_LIB_OK=TRUE uv run pytest
 ```
+
+(The `OMP_*` prefix is required on macOS to dodge the libomp double-load segfault; harmless elsewhere.)
 
 Project rules (also in [CLAUDE.md](CLAUDE.md)):
 
