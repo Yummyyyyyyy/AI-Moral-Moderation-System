@@ -9,7 +9,8 @@ app/
   api/          FastAPI routers: ingest, feed, chat, moderation
   classifier/   Stage-1 binary + stage-2 typed classifiers (base + dummy + team stub)
   rag/          Retriever (base + dummy + team stub)
-  llm/          LLMClient + dummy/claude/local adapters
+  llm/          LLMClient + dummy / openai / local adapters
+  polisher/     Post-responder draft polisher (base + dummy + team)
   prompts/      YAML prompt templates (persuade/*, counsel/*)
   responder/    PersuadeResponder, CounselResponder, Registry
   schemas/      Pydantic schemas shared across layers
@@ -18,8 +19,14 @@ app/
   main.py       FastAPI app
 scripts/
   seed_mock.py  POSTs a JSONL file to /ingest
+models/         ML weights & FAISS indexes (gitignored; populated out of band)
+  classifier_binary/   Member A — RoBERTa-base toxicity classifier
+  classifier_typed/    Member B — multitask RoBERTa harm-type classifier
+  rag_index/           Member C — FAISS case + knowledge indexes
 data/
-  mock_posts.jsonl
+  mock_posts.jsonl     Seed fixture for the mock stream
+  rag_corpus/          (optional) source docs for rebuilding the RAG index
+  mms.db               Runtime SQLite (created on first run)
 tests/
 ```
 
@@ -38,6 +45,11 @@ tests/
 | `MMS_POLISHER_IMPL` | `dummy` | `dummy` / `team`. `team` calls Member D's Colab+ngrok service to refine every reply draft. Failures fall back to the unpolished draft. |
 | `MMS_POLISHER_URL` | *(empty)* | Pin the polisher endpoint explicitly. Leave empty to auto-resolve from the shared Google Drive file Siwei publishes on each Colab boot. |
 | `MMS_POLISHER_TIMEOUT` | `15` | Seconds. Applies to both URL fetch and the inference call. |
+| `MMS_AUTO_PUBLISH` | `0` | `1` bypasses the moderator queue (demo only). |
+| `MMS_CLASSIFIER_BINARY_DIR` | `models/classifier_binary` | Override where Member A's RoBERTa weights live. |
+| `MMS_CLASSIFIER_TYPED_DIR` | `models/classifier_typed` | Override where Member B's multitask checkpoint lives. |
+| `MMS_RAG_INDEX_DIR` | `models/rag_index` | Override where Member C's FAISS indexes live. |
+| `MMS_TYPED_DEVICE` | *(auto)* | Force `cpu` / `cuda` / `mps` for the typed classifier. |
 
 ## Run
 
@@ -67,10 +79,10 @@ Then hit `GET http://localhost:8000/posts`, `GET /mod/queue`, etc.
 
 ## Team contract
 
-- Member A implements `TeamBinaryClassifier.classify` in [app/classifier/binary.py](app/classifier/binary.py).
-- Member B implements `TeamTypedClassifier.categorize` in [app/classifier/typed.py](app/classifier/typed.py).
-- Member C implements `TeamRetriever.retrieve` in [app/rag/retriever.py](app/rag/retriever.py).
-- Member D exposes their RLHF model at an OpenAI-compatible endpoint; the integrator sets `MMS_LLM_PROVIDER=local` and `MMS_LOCAL_LLM_URL=<url>`.
+- Member A implements `TeamBinaryClassifier.classify` in [app/classifier/binary.py](app/classifier/binary.py); weights in `models/classifier_binary/`.
+- Member B implements `TeamTypedClassifier.categorize` in [app/classifier/typed.py](app/classifier/typed.py); checkpoint in `models/classifier_typed/`.
+- Member C implements `TeamRetriever.retrieve` in [app/rag/retriever.py](app/rag/retriever.py); FAISS indexes in `models/rag_index/`.
+- Member D implements `TeamPolisher.polish` in [app/polisher/team.py](app/polisher/team.py) backed by a Colab+ngrok service; the integrator sets `MMS_POLISHER_IMPL=team`.
 
 No module imports any other team's internals — everything goes through the
 Protocols in each package's `base.py`.

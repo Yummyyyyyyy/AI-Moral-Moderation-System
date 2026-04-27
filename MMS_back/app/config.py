@@ -17,7 +17,20 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
 REPO_DIR = BASE_DIR.parent
 DATA_DIR = REPO_DIR / "data"
+MODELS_DIR = REPO_DIR / "models"
 PROMPTS_DIR = BASE_DIR / "prompts"
+
+
+def model_dir(name: str) -> Path:
+    """Resolve a per-module model artifact directory.
+
+    Looks up ``MMS_<NAME>_DIR`` (uppercase) for an explicit override,
+    otherwise falls back to ``MODELS_DIR / name``. Used by the binary /
+    typed classifiers and the RAG retriever so artifact locations are
+    declared in one place.
+    """
+    override = os.environ.get(f"MMS_{name.upper()}_DIR")
+    return Path(override) if override else MODELS_DIR / name
 
 
 @dataclass(frozen=True)

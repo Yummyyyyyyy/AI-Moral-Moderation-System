@@ -4,20 +4,16 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
-from pathlib import Path
 
+from app.config import model_dir
 from app.schemas.classification import BinaryLabel
 from app.schemas.post import Post
 
 logger = logging.getLogger(__name__)
 
-# Model artifacts dir: defaults to model_assets/ next to this file.
-# Override with MMS_BINARY_MODEL_DIR env var when artifacts live elsewhere.
-_MODEL_DIR = Path(
-    os.environ.get("MMS_BINARY_MODEL_DIR", Path(__file__).parent / "model_assets")
-)
+# Resolves to MMS_back/models/classifier_binary/, override via MMS_CLASSIFIER_BINARY_DIR.
+_MODEL_DIR = model_dir("classifier_binary")
 
 _MAX_LEN = 96  # must match config.MAX_LEN used during training
 
