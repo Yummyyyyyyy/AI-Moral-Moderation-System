@@ -82,6 +82,8 @@ CREATE TABLE IF NOT EXISTS turns (
 
 CREATE INDEX IF NOT EXISTS idx_classifications_post ON classifications(post_id);
 CREATE INDEX IF NOT EXISTS idx_replies_post ON replies(post_id);
+-- Speeds up the moderator queue (list_pending: status='pending_mod' ORDER BY created_at).
+CREATE INDEX IF NOT EXISTS idx_replies_status_created ON replies(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_turns_session ON turns(session_id);
 """
 
